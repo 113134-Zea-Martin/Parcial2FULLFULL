@@ -1,15 +1,18 @@
 version: '3.8'
 
 services:
-  frontend:
-    image: "ghcr.io/tup-utn-frc-lciii/flight-check-in-front-end"
-    build: .
+  Front-End:
+    image: ghcr.io/tup-utn-frc-lciii/flight-check-in-front-end
     ports:
       - "4200:4200"
     volumes:
       - ./:/usr/src/app
       - /usr/src/app/node_modules
     restart: unless-stopped
+    networks:
+      app-net:
+    environment:
+      API_URL: http://localhost:8080/ #Ignorar
 
   nginx:
     image: nginx:latest
@@ -22,18 +25,23 @@ services:
     ports:
       - "8080:8080"
       - "80:80"
+    networks:
+      app-net:
     depends_on:
-      - backend
-      - frontend
+      - back-end
+      - Front-End
 
 
-  backend:
+  back-end:
     build: .
     ports:
       - "8081:8081"
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      app-net:
+      back-end-net:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/vuelos
       SPRING_DATASOURCE_USERNAME: utn
@@ -51,8 +59,13 @@ services:
       - "3306:3306"
     expose:
       - "3306"
+    networks:
+      back-end-net:
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "db" ]
       interval: 10s
       timeout: 5s
       retries: 5
+networks:
+  app-net:
+  back-end-net:

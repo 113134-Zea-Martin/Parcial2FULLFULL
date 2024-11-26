@@ -24,6 +24,8 @@ public class ReservationMapper {
             if(passengerEntity.getSeat() != null)
             {
                 passengersDto.setSeat(passengerEntity.getSeat().getSeat());
+            }else{
+                passengersDto.setSeat("");
             }
             dto.getPassengers().add(passengersDto);
         }
